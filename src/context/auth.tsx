@@ -1,4 +1,10 @@
-import React, { createContext, useReducer, useContext, ReactNode } from "react";
+import React, {
+    createContext,
+    useReducer,
+    useContext,
+    ReactNode,
+    useEffect,
+} from "react";
 
 type AuthAction =
     | { type: "SET_TOKEN"; payload: string }
@@ -37,18 +43,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         authReducer,
         localStorage.getItem("token") || null
     );
-    console.log(!state);
-    // useEffect(() => {
-    //     if (
-    //         !state &&
-    //         window.location.pathname !== "/login" &&
-    //         window.location.pathname !== "/delete-account"
-    //     ) {
-    //         window.location.href = "/login";
-    //     } else if (state && window.location.pathname === "/login") {
-    //         window.location.href = "/";
-    //     }
-    // }, [state]);
+
+    useEffect(() => {
+        if (
+            !state &&
+            window.location.pathname !== "/login" &&
+            window.location.pathname !== "/delete-account"
+        ) {
+            window.location.href = "/login";
+        } else if (state && window.location.pathname === "/login") {
+            window.location.href = "/";
+        }
+    }, [state]);
 
     return (
         <AuthContext.Provider value={{ state, dispatch }}>
