@@ -1,15 +1,23 @@
+import { RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
 
-import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-interface AppProps {
-    children: ReactNode;
-}
+import { router } from "./config/router";
+import { Toaster } from "./components/ui/toaster";
+import { AuthProvider } from "./context/auth";
 
-export default function App({ children }: AppProps) {
+export default function App() {
+    const queryClient = new QueryClient();
+
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            {children}
+            <AuthProvider>
+                <QueryClientProvider client={queryClient}>
+                    <RouterProvider router={router} />
+                </QueryClientProvider>
+            </AuthProvider>
+            <Toaster />
         </ThemeProvider>
     );
 }
