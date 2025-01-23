@@ -3,10 +3,10 @@ import axios from "axios";
 export const baseUrl =
     import.meta.env.MODE === "development"
         ? import.meta.env.VITE_DEV_API_URL
-        : window.location.origin;
+        : `${window.location.origin}/`;
 
 export const axiosInstance = axios.create({
-    baseURL: `${baseUrl}/api/`,
+    baseURL: `${baseUrl}api/`,
     headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
     },

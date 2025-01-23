@@ -1,10 +1,10 @@
 export const mainNav = [
     {
-        title: "Бошқарув панели",
+        title: "Фойдаланувчилар",
         href: "/",
     },
     {
-        title: "Фойдаланувчилар",
-        href: "/users",
+        title: "Бошқарув панели",
+        href: "/dashboard",
     },
 ];
