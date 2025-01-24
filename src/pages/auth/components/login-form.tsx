@@ -26,7 +26,8 @@ export function LoginForm({
     const form = useForm<LoginFields>({
         resolver: zodResolver(loginSchema),
     });
-
+    // const phone = form.watch("phone_number");
+    // console.log(phone);
     const onSubmit: SubmitHandler<LoginFields> = (data) => {
         data = {
             ...data,
@@ -44,7 +45,11 @@ export function LoginForm({
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit, (err) =>
+                                console.error(err)
+                            )}
+                        >
                             <div className="grid gap-6">
                                 <div className="grid gap-6">
                                     <div className="grid gap-2">

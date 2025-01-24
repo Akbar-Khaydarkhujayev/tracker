@@ -1,3 +1,4 @@
+import { toast } from "@/hooks/use-toast";
 import axios from "axios";
 
 export const baseUrl =
@@ -22,6 +23,10 @@ axiosInstance.interceptors.response.use(
             localStorage.removeItem("token");
             window.location.href = "/login";
         }
+        toast({
+            variant: "destructive",
+            title: `${error.response?.data?.message || error.message}`,
+        });
         return Promise.reject(error);
     }
 );

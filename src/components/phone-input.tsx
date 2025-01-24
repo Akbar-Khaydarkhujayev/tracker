@@ -66,7 +66,7 @@ export function PhoneInput({
         asYouType.reset();
 
         const clipboardData = event.clipboardData;
-
+        console.log(event);
         if (clipboardData) {
             const pastedData = clipboardData.getData("text/plain");
             const formattedValue = asYouType.input(pastedData);

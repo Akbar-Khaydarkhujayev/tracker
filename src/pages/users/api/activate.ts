@@ -25,14 +25,5 @@ export const useActivateUser = () => {
                 title: res.message,
             });
         },
-        onError: (error) => {
-            const err = error as unknown as {
-                response: { data: { message: string } };
-            };
-            toast({
-                variant: "destructive",
-                title: err.response.data.message || "Хатолик юз берди",
-            });
-        },
     });
 };
