@@ -28,6 +28,7 @@ export type PhoneData = {
 interface PhoneInputProps extends React.ComponentPropsWithoutRef<"input"> {
     value?: string;
     defaultCountry?: CountryCode;
+    setValue?: (value: string) => void;
 }
 
 export function PhoneInput({
@@ -35,6 +36,7 @@ export function PhoneInput({
     className,
     id,
     required = true,
+    setValue,
     ...rest
 }: PhoneInputProps) {
     const asYouType = new AsYouType();
@@ -66,11 +68,16 @@ export function PhoneInput({
         asYouType.reset();
 
         const clipboardData = event.clipboardData;
-        console.log(event);
+
         if (clipboardData) {
-            const pastedData = clipboardData.getData("text/plain");
-            const formattedValue = asYouType.input(pastedData);
+            let pastedData = clipboardData.getData("text/plain");
+            if (pastedData.startsWith("+998")) {
+                pastedData = pastedData.slice(4);
+            }
+            pastedData = pastedData.replace(/\s+/g, "");
+            const formattedValue = asYouType.input(`+998${pastedData}`);
             event.currentTarget.value = formattedValue;
+            if (setValue) setValue(formattedValue);
         }
     };
 

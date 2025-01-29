@@ -25,9 +25,13 @@ export function LoginForm({
 
     const form = useForm<LoginFields>({
         resolver: zodResolver(loginSchema),
+        defaultValues: {
+            phone_number: "+998",
+            password: "",
+        },
     });
-    // const phone = form.watch("phone_number");
-    // console.log(phone);
+    const phone = form.watch("phone_number");
+    console.log(phone);
     const onSubmit: SubmitHandler<LoginFields> = (data) => {
         data = {
             ...data,
@@ -41,7 +45,7 @@ export function LoginForm({
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
                 <CardHeader className="text-center">
-                    <CardTitle className="text-xl">Welcome</CardTitle>
+                    <CardTitle className="text-xl">Хуш келибсиз</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -63,6 +67,14 @@ export function LoginForm({
                                                     </FormLabel>
                                                     <FormControl>
                                                         <PhoneInput
+                                                            setValue={(
+                                                                val: string
+                                                            ) =>
+                                                                form.setValue(
+                                                                    "phone_number",
+                                                                    val
+                                                                )
+                                                            }
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -99,10 +111,10 @@ export function LoginForm({
                                         {isPending ? (
                                             <>
                                                 <Loader2 className="animate-spin" />{" "}
-                                                Loggin in...
+                                                Кирилмокда...
                                             </>
                                         ) : (
-                                            "Login"
+                                            "Тизимга кириш"
                                         )}
                                     </Button>
                                 </div>

@@ -8,6 +8,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 import { useGetUsers } from "./api/getAll";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { baseUrl } from "@/config/axios";
@@ -15,9 +24,57 @@ import { Switch } from "@/components/ui/switch";
 import { useActivateUser } from "./api/activate";
 import { useApproveUser } from "./api/approve";
 import { AddAdminDialog } from "./components/add-admin-dialog";
+import { useEffect, useState } from "react";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { format, subDays } from "date-fns";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
+import usePagination from "@/hooks/use-pagination";
+import { Badge } from "@/components/ui/badge";
+
+const dateSelectOptions = [
+    {
+        label: "Бугун",
+        value: "1",
+    },
+    {
+        label: "Охирги ҳафта",
+        value: "7",
+    },
+    {
+        label: "Охирги ой",
+        value: "31",
+    },
+];
 
 export default function Users() {
-    const { data: users } = useGetUsers();
+    const [date, setDate] = useState<DateRange | undefined>({
+        from: subDays(new Date(), 1),
+        to: new Date(),
+    });
+
+    const { pagination, page, limit, setTotalPages } = usePagination();
+
+    const { data: users } = useGetUsers({
+        limit: limit,
+        page,
+        startDate: date?.from ? format(date.from, "yyyy-MM-dd") : undefined,
+        endDate: date?.to ? format(date.to, "yyyy-MM-dd") : undefined,
+    });
+
+    useEffect(() => {
+        if (users?.totalCount) {
+            setTotalPages(users?.totalPage ?? 1);
+        }
+    }, [users, setTotalPages]);
+
     const { mutate: approve } = useApproveUser();
     const { mutate: activate } = useActivateUser();
 
@@ -25,7 +82,65 @@ export default function Users() {
         <>
             <PageHeader className="flex justify-between">
                 <PageHeaderHeading>Фойдаланувчилар</PageHeaderHeading>
-                <AddAdminDialog />
+                <div className="flex gap-4">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-[280px] justify-start text-left font-normal",
+                                    !date && "text-muted-foreground"
+                                )}
+                            >
+                                <CalendarIcon />
+                                {date && date.from && date.to ? (
+                                    format(date.from, "dd.MM.yyyy") +
+                                    " - " +
+                                    format(date.to, "dd.MM.yyyy")
+                                ) : (
+                                    <span>Сана оралиғини танланг</span>
+                                )}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="flex w-auto flex-col space-y-2 p-2">
+                            <Select
+                                onValueChange={(value) =>
+                                    setDate({
+                                        from: subDays(
+                                            new Date(),
+                                            parseInt(value)
+                                        ),
+                                        to: new Date(),
+                                    })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Сана оралиғини танланг" />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    {dateSelectOptions.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="rounded-md border">
+                                <Calendar
+                                    mode="range"
+                                    defaultMonth={date?.to}
+                                    selected={date}
+                                    onSelect={setDate}
+                                    max={new Date().getTime()}
+                                />
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    <AddAdminDialog />
+                </div>
             </PageHeader>
             <div className="flex flex-col flex-grow">
                 <div className="container-wrapper flex flex-col flex-grow">
@@ -41,11 +156,20 @@ export default function Users() {
                                 <TableHead className="text-right">
                                     Фаол
                                 </TableHead>
+                                <TableHead className="text-right">
+                                    Ишлаш керак болган соат
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Ишлаган соат
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Етмаган/Ортиқча соат
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users?.map((user) => (
-                                <TableRow key={user.id}>
+                            {users?.data?.map((user) => (
+                                <TableRow key={user.user_id}>
                                     <TableCell className="p-2" width={1}>
                                         <Avatar className="rounded-lg">
                                             <AvatarImage
@@ -70,7 +194,7 @@ export default function Users() {
                                             checked={user.is_approved}
                                             onCheckedChange={(isApproved) =>
                                                 approve({
-                                                    userId: user.id,
+                                                    userId: user.user_id,
                                                     isApproved,
                                                 })
                                             }
@@ -82,11 +206,29 @@ export default function Users() {
                                             checked={user.is_active}
                                             onCheckedChange={(isActive) =>
                                                 activate({
-                                                    userId: user.id,
+                                                    userId: user.user_id,
                                                     isActive,
                                                 })
                                             }
                                         />
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {user.expected_hours}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {user.actual_hours}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Badge
+                                            variant={
+                                                user.work_status ===
+                                                "underworked"
+                                                    ? "destructive"
+                                                    : "success"
+                                            }
+                                        >
+                                            {user.missing_hours}
+                                        </Badge>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -94,14 +236,7 @@ export default function Users() {
                     </Table>
                     <div className="flex flex-grow"></div>
                     <Table>
-                        <TableFooter>
-                            <TableRow>
-                                <TableCell colSpan={4}>Total</TableCell>
-                                <TableCell className="text-right">
-                                    $2,500.00
-                                </TableCell>
-                            </TableRow>
-                        </TableFooter>
+                        <TableFooter>{pagination}</TableFooter>
                     </Table>
                 </div>
             </div>
