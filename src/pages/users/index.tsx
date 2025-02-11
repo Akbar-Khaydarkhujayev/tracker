@@ -38,11 +38,12 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import usePagination from "@/hooks/use-pagination";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const dateSelectOptions = [
     {
         label: "Бугун",
-        value: "1",
+        value: "0",
     },
     {
         label: "Охирги ҳафта",
@@ -55,8 +56,10 @@ const dateSelectOptions = [
 ];
 
 export default function Users() {
+    const navigate = useNavigate();
+
     const [date, setDate] = useState<DateRange | undefined>({
-        from: subDays(new Date(), 1),
+        from: new Date(),
         to: new Date(),
     });
 
@@ -169,7 +172,13 @@ export default function Users() {
                         </TableHeader>
                         <TableBody>
                             {users?.data?.map((user) => (
-                                <TableRow key={user.user_id}>
+                                <TableRow
+                                    key={user.user_id}
+                                    onClick={() => {
+                                        navigate(user.user_id);
+                                    }}
+                                    className="cursor-pointer"
+                                >
                                     <TableCell className="p-2" width={1}>
                                         <Avatar className="rounded-lg">
                                             <AvatarImage
