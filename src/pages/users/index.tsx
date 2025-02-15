@@ -68,8 +68,12 @@ export default function Users() {
     const { data: users } = useGetUsers({
         limit: limit,
         page,
-        startDate: date?.from ? format(date.from, "yyyy-MM-dd") : undefined,
-        endDate: date?.to ? format(date.to, "yyyy-MM-dd") : undefined,
+        startDate: date?.from
+            ? format(date.from, "yyyy-MM-dd")
+            : format(new Date(), "yyyy-MM-dd"),
+        endDate: date?.to
+            ? format(date.to, "yyyy-MM-dd")
+            : format(new Date(), "yyyy-MM-dd"),
     });
 
     useEffect(() => {

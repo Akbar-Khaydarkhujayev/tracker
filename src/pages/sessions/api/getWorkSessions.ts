@@ -11,9 +11,10 @@ export interface IWorkSession {
 
 interface IResponse {
     days: { [date: string]: IWorkSession[] };
-    total_hours: string;
-    total_work_hours: string;
+    missing_hours: string;
+    total_adjusted_hours: number;
     total_overtime_hours: string;
+    total_work_hours: string;
     user_info: {
         photo: string;
         first_name: string;

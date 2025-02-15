@@ -1,4 +1,4 @@
-import { differenceInMinutes, format } from "date-fns";
+import { differenceInMinutes, format, setHours, startOfDay } from "date-fns";
 import { IWorkSession } from "../api/getWorkSessions";
 import {
     Tooltip,
@@ -6,112 +6,125 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 interface IProps {
     sessions: IWorkSession[];
 }
 
+interface IProcessedSession {
+    duration: number;
+    end_time: Date;
+    start_time: Date;
+    type: "work" | "break";
+}
+
 export default function SessionLine({ sessions }: IProps) {
-    if (sessions.length === 0) return null;
+    const processedSessions = useMemo(() => {
+        if (!sessions.length) return [];
 
-    // Найти минимальное и максимальное время среди сессий
-    const minStartTime = new Date(
-        Math.min(...sessions.map((s) => new Date(s.start_time).getTime()))
-    );
-    const maxEndTime = new Date(
-        Math.max(...sessions.map((s) => new Date(s.end_time).getTime()))
-    );
+        const dayStart = setHours(startOfDay(new Date()), 9);
+        const dayEnd = setHours(startOfDay(new Date()), 18);
+        const result: IProcessedSession[] = [];
 
-    // Определяем границы рабочего дня (9:00 - 18:00)
-    const workHoursStart = new Date(minStartTime);
-    workHoursStart.setHours(9, 0, 0, 0);
-    const workHoursEnd = new Date(minStartTime);
-    workHoursEnd.setHours(18, 0, 0, 0);
-
-    // Если есть сессии раньше 9:00 или позже 18:00, корректируем границы
-    const actualStartTime =
-        minStartTime < workHoursStart ? minStartTime : workHoursStart;
-    const actualEndTime = maxEndTime > workHoursEnd ? maxEndTime : workHoursEnd;
-
-    const totalMinutes = differenceInMinutes(actualEndTime, actualStartTime);
-    const sessionElements = [];
-    let lastEndTime = actualStartTime;
-
-    sessions.forEach((session, index) => {
-        const sessionStartTime = new Date(session.start_time);
-        const sessionEndTime = new Date(session.end_time);
-        const sessionStartMinutes = differenceInMinutes(
-            sessionStartTime,
-            actualStartTime
-        );
-
-        if (
-            sessionStartMinutes >
-            differenceInMinutes(lastEndTime, actualStartTime)
-        ) {
-            const gapMinutes =
-                sessionStartMinutes -
-                differenceInMinutes(lastEndTime, actualStartTime);
-            const gapWidthPercentage = (gapMinutes / totalMinutes) * 100;
-            sessionElements.push(
-                <div
-                    key={`gap-${index}`}
-                    className="bg-secondary"
-                    style={{ width: `${gapWidthPercentage}%` }}
-                />
-            );
+        if (new Date(sessions[0].start_time) > dayStart) {
+            result.push({
+                duration: differenceInMinutes(
+                    new Date(sessions[0].start_time),
+                    dayStart
+                ),
+                start_time: dayStart,
+                end_time: new Date(sessions[0].start_time),
+                type: "break",
+            });
         }
 
-        const sessionDuration = differenceInMinutes(
-            sessionEndTime,
-            sessionStartTime
-        );
-        const widthPercentage = (sessionDuration / totalMinutes) * 100;
+        sessions.forEach((session, i) => {
+            const start = new Date(session.start_time);
+            const end = new Date(session.end_time);
 
-        sessionElements.push(
-            <TooltipProvider key={session.start_time}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div
-                            className="bg-primary cursor-pointer border-r text-black font-bold flex flex-col justify-between h-full p-1"
-                            style={{ width: `${widthPercentage}%` }}
-                        >
-                            <div className="text-xs">
-                                {widthPercentage > 10 &&
-                                    format(sessionStartTime, "HH:mm")}
-                            </div>
-                            <div className="text-xs">
-                                {widthPercentage > 10 &&
-                                    format(sessionEndTime, "HH:mm")}
-                            </div>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        {format(sessionStartTime, "HH:mm")} -{" "}
-                        {format(sessionEndTime, "HH:mm")}
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        );
+            result.push({
+                duration: differenceInMinutes(end, start),
+                start_time: start,
+                end_time: end,
+                type: "work",
+            });
 
-        lastEndTime = sessionEndTime;
-    });
+            const nextSession = sessions[i + 1];
+            if (nextSession) {
+                const nextStart = new Date(nextSession.start_time);
+                if (end < nextStart) {
+                    result.push({
+                        duration: differenceInMinutes(nextStart, end),
+                        start_time: end,
+                        end_time: nextStart,
+                        type: "break",
+                    });
+                }
+            }
+        });
 
-    if (differenceInMinutes(actualEndTime, lastEndTime) > 0) {
-        const gapMinutes = differenceInMinutes(actualEndTime, lastEndTime);
-        const gapWidthPercentage = (gapMinutes / totalMinutes) * 100;
-        sessionElements.push(
-            <div
-                key={`gap-end`}
-                className="bg-secondary"
-                style={{ width: `${gapWidthPercentage}%` }}
-            />
-        );
-    }
+        const lastSessionEnd = new Date(sessions[sessions.length - 1].end_time);
+        if (lastSessionEnd < dayEnd) {
+            result.push({
+                duration: differenceInMinutes(dayEnd, lastSessionEnd),
+                start_time: lastSessionEnd,
+                end_time: dayEnd,
+                type: "break",
+            });
+        }
+
+        return result;
+    }, [sessions]);
+
+    console.log("/////////////////////////////////////////////");
+    console.log(sessions);
+    console.log(processedSessions);
+
+    const totalDuration = processedSessions.length
+        ? differenceInMinutes(
+              processedSessions[processedSessions.length - 1].end_time,
+              processedSessions[0].start_time
+          )
+        : 0;
 
     return (
         <div className="rounded-md h-10 overflow-hidden w-full flex bg-secondary">
-            {sessionElements}
+            {processedSessions.map((session, i) => {
+                const widthPercentage =
+                    (session.duration / totalDuration) * 100;
+                return (
+                    <TooltipProvider key={i}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div
+                                    className={cn(
+                                        "cursor-pointer border-r font-bold flex justify-between h-full p-1",
+                                        session.type === "work"
+                                            ? "bg-green-700 hover:bg-green-700/80"
+                                            : "bg-destructive  hover:bg-destructive/80"
+                                    )}
+                                    style={{ width: `${widthPercentage}%` }}
+                                >
+                                    <div className="text-lg">
+                                        {widthPercentage > 10 &&
+                                            format(session.start_time, "HH:mm")}
+                                    </div>
+                                    <div className="text-lg">
+                                        {widthPercentage > 10 &&
+                                            format(session.end_time, "HH:mm")}
+                                    </div>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {format(session.start_time, "HH:mm")} -{" "}
+                                {format(session.end_time, "HH:mm")}
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                );
+            })}
         </div>
     );
 }

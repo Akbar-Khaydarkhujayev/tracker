@@ -91,18 +91,18 @@ export default function Sessions() {
                     </Button>
                 </PageHeaderHeading>
                 <div className="flex gap-4">
-                    <Badge variant="success" className="px-4 h-10 text-base">
-                        + 4 soat
-                    </Badge>
-                    <Badge
-                        variant="destructive"
-                        className="px-4 h-10 text-base"
-                    >
-                        - 2 soat
-                    </Badge>
-                    <Badge variant="default" className="px-4 h-10 text-base">
-                        + 4 soat
-                    </Badge>
+                    {!!data?.total_adjusted_hours && (
+                        <Badge
+                            variant={
+                                data?.total_adjusted_hours < 0
+                                    ? "destructive"
+                                    : "success"
+                            }
+                            className="px-4 h-10 text-base"
+                        >
+                            {data?.total_adjusted_hours} soat
+                        </Badge>
+                    )}
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -196,27 +196,31 @@ export default function Sessions() {
                                 <div>
                                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight leading-10">
                                         Umumiy:{" "}
-                                        {data?.total_hours
+                                        {data?.total_work_hours
                                             ? formatTotalHours(
-                                                  data?.total_hours
+                                                  data?.total_work_hours
                                               )
                                             : "0 soat"}
                                     </h4>
                                 </div>
-                                <Badge
-                                    variant="success"
-                                    className="px-4 h-10 text-base"
-                                >
-                                    {" "}
-                                    + 123 soat{" "}
-                                </Badge>
-                                <Badge
-                                    variant="destructive"
-                                    className="px-4 h-10 text-base"
-                                >
-                                    {" "}
-                                    - 6 soat{" "}
-                                </Badge>
+                                {!!data?.total_overtime_hours && (
+                                    <Badge
+                                        variant="success"
+                                        className="px-4 h-10 text-base"
+                                    >
+                                        {formatTotalHours(
+                                            data?.total_overtime_hours
+                                        )}
+                                    </Badge>
+                                )}
+                                {!!data?.missing_hours && (
+                                    <Badge
+                                        variant="destructive"
+                                        className="px-4 h-10 text-base"
+                                    >
+                                        {formatTotalHours(data?.missing_hours)}
+                                    </Badge>
+                                )}
                             </div>
 
                             {data?.days?.[
