@@ -12,7 +12,7 @@ import { useState } from "react";
 export default function usePagination() {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
-    const [limit, setLimit] = useState(10);
+    const [limit, setLimit] = useState(16);
 
     const renderPaginationItems = () => {
         const items = [];
@@ -23,10 +23,10 @@ export default function usePagination() {
                 items.push(
                     <PaginationItem key={i}>
                         <PaginationLink
-                            isActive={i === page + 1}
+                            isActive={i === page + 1} // Adjusted condition
                             onClick={(e) => {
                                 e.preventDefault();
-                                setPage(i);
+                                setPage(i - 1); // Adjusted setPage
                             }}
                         >
                             {i}
@@ -38,10 +38,10 @@ export default function usePagination() {
             items.push(
                 <PaginationItem key={1}>
                     <PaginationLink
-                        isActive={1 === page}
+                        isActive={1 === page + 1} // Adjusted condition
                         onClick={(e) => {
                             e.preventDefault();
-                            setPage(1);
+                            setPage(0); // Adjusted setPage
                         }}
                     >
                         1
@@ -49,7 +49,7 @@ export default function usePagination() {
                 </PaginationItem>
             );
 
-            if (page > 3) {
+            if (page > 2) {
                 items.push(
                     <PaginationItem key="ellipsis-start">
                         <PaginationEllipsis />
@@ -57,17 +57,17 @@ export default function usePagination() {
                 );
             }
 
-            const startPage = Math.max(2, page - 2);
-            const endPage = Math.min(totalPages - 1, page + 2);
+            const startPage = Math.max(2, page - 1);
+            const endPage = Math.min(totalPages - 1, page + 3);
 
             for (let i = startPage; i <= endPage; i++) {
                 items.push(
                     <PaginationItem key={i}>
                         <PaginationLink
-                            isActive={i === page}
+                            isActive={i === page + 1} // Adjusted condition
                             onClick={(e) => {
                                 e.preventDefault();
-                                setPage(i);
+                                setPage(i - 1); // Adjusted setPage
                             }}
                         >
                             {i}
@@ -76,7 +76,7 @@ export default function usePagination() {
                 );
             }
 
-            if (page < totalPages - 2) {
+            if (page < totalPages - 3) {
                 items.push(
                     <PaginationItem key="ellipsis-end">
                         <PaginationEllipsis />
@@ -87,11 +87,10 @@ export default function usePagination() {
             items.push(
                 <PaginationItem key={totalPages}>
                     <PaginationLink
-                        href="#"
-                        isActive={totalPages === page}
+                        isActive={totalPages === page + 1} // Adjusted condition
                         onClick={(e) => {
                             e.preventDefault();
-                            setPage(totalPages);
+                            setPage(totalPages - 1); // Adjusted setPage
                         }}
                     >
                         {totalPages}

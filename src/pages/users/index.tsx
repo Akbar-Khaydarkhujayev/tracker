@@ -39,6 +39,7 @@ import { DateRange } from "react-day-picker";
 import usePagination from "@/hooks/use-pagination";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const dateSelectOptions = [
     {
@@ -151,102 +152,109 @@ export default function Users() {
             </PageHeader>
             <div className="flex flex-col flex-grow">
                 <div className="container-wrapper flex flex-col flex-grow">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead></TableHead>
-                                <TableHead>ФИО</TableHead>
-                                <TableHead>Телефон рақами</TableHead>
-                                <TableHead className="text-right">
-                                    Тасдиқланган
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    Фаол
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    Ишлаш керак болган соат
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    Ишлаган соат
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    Етмаган/Ортиқча соат
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {users?.data?.map((user) => (
-                                <TableRow
-                                    key={user.user_id}
-                                    onClick={() => {
-                                        navigate(user.user_id);
-                                    }}
-                                    className="cursor-pointer"
-                                >
-                                    <TableCell className="p-2" width={1}>
-                                        <Avatar className="rounded-lg">
-                                            <AvatarImage
-                                                src={`${baseUrl}/api/${user.photo}`}
-                                                alt={user.first_name}
-                                            />
-                                            <AvatarFallback className="rounded-lg">
-                                                {(
-                                                    user.first_name.charAt(0) +
-                                                    user.last_name.charAt(0)
-                                                ).toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </TableCell>
-                                    <TableCell>
-                                        {user.first_name} {user.last_name}
-                                    </TableCell>
-                                    <TableCell>{user.phone_number}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Switch
-                                            id="is_approved"
-                                            checked={user.is_approved}
-                                            onCheckedChange={(isApproved) =>
-                                                approve({
-                                                    userId: user.user_id,
-                                                    isApproved,
-                                                })
-                                            }
-                                        />
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Switch
-                                            id="is_active"
-                                            checked={user.is_active}
-                                            onCheckedChange={(isActive) =>
-                                                activate({
-                                                    userId: user.user_id,
-                                                    isActive,
-                                                })
-                                            }
-                                        />
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {user.expected_hours}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {user.actual_hours}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Badge
-                                            variant={
-                                                user.work_status ===
-                                                "underworked"
-                                                    ? "destructive"
-                                                    : "success"
-                                            }
-                                        >
-                                            {user.missing_hours}
-                                        </Badge>
-                                    </TableCell>
+                    <ScrollArea className="w-full h-[calc(100vh-195px)] relative">
+                        <Table>
+                            <TableHeader className="sticky top-0 bg-muted z-10">
+                                <TableRow>
+                                    <TableHead></TableHead>
+                                    <TableHead>ФИО</TableHead>
+                                    <TableHead>Телефон рақами</TableHead>
+                                    <TableHead className="text-right">
+                                        Тасдиқланган
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        Фаол
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        Ишлаш керак болган соат
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        Ишлаган соат
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        Етмаган/Ортиқча соат
+                                    </TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {users?.data?.map((user) => (
+                                    <TableRow
+                                        key={user.user_id}
+                                        onClick={() => {
+                                            navigate(user.user_id);
+                                        }}
+                                        className="cursor-pointer"
+                                    >
+                                        <TableCell className="p-2" width={1}>
+                                            <Avatar className="rounded-lg">
+                                                <AvatarImage
+                                                    src={`${baseUrl}/api/${user.photo}`}
+                                                    alt={user.first_name}
+                                                    className="object-cover"
+                                                />
+                                                <AvatarFallback className="rounded-lg">
+                                                    {(
+                                                        user.first_name.charAt(
+                                                            0
+                                                        ) +
+                                                        user.last_name.charAt(0)
+                                                    ).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.first_name} {user.last_name}
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.phone_number}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Switch
+                                                id="is_approved"
+                                                checked={user.is_approved}
+                                                onCheckedChange={(isApproved) =>
+                                                    approve({
+                                                        userId: user.user_id,
+                                                        isApproved,
+                                                    })
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Switch
+                                                id="is_active"
+                                                checked={user.is_active}
+                                                onCheckedChange={(isActive) =>
+                                                    activate({
+                                                        userId: user.user_id,
+                                                        isActive,
+                                                    })
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            {user.expected_hours}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            {user.actual_hours}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Badge
+                                                variant={
+                                                    user.work_status ===
+                                                    "underworked"
+                                                        ? "destructive"
+                                                        : "success"
+                                                }
+                                            >
+                                                {user.missing_hours}
+                                            </Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
                     <div className="flex flex-grow"></div>
                     <Table>
                         <TableFooter>{pagination}</TableFooter>

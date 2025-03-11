@@ -25,12 +25,10 @@ const authReducer = (
     switch (action.type) {
         case "SET_TOKEN":
             localStorage.setItem("token", action.payload);
-            // window.location.reload();
             window.location.href = "/";
             return action.payload;
         case "CLEAR_TOKEN":
             localStorage.removeItem("token");
-            // window.location.reload();
             window.location.href = "/login";
             return null;
         default:
